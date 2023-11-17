@@ -146,15 +146,28 @@ public static class Drawing
     public static List<string> ProcessaMensagens(TextArea textArea, List<Mensagem> conversa)
     {
         List<string> textos = new();
+        string lastRemetent = "";
 
         foreach (var message in conversa)
         {
             if (message is null || message.Content is null)
-                return new List<string>();
+                continue;
 
 
             if (message.RemetentId is not null)
-                textos.Add(message.RemetentId + ":");
+            {
+                if (message.RemetentId != lastRemetent)
+                {
+                    lastRemetent = message.RemetentId;
+                    textos.Add(message.RemetentId + ":");
+                }
+            }
+            else
+            {
+                lastRemetent = "Unknow";
+                textos.Add("Unknow" + ":");
+            }
+
 
             int maxCaracteresLinha = textArea.Size.x - 2;
             int paddingMessage = 1;
@@ -178,6 +191,7 @@ public static class Drawing
                 textos.Add(resultado);
                 contentCopy = contentCopy.Substring(Math.Min(contentCopy.Length, tamanhoMensagem));
             }
+
 
             if (message.CreatedAt is not null)
                 textos.Add($"{message.CreatedAt.Value.Hour}:{message.CreatedAt.Value.Minute}".PadLeft(maxCaracteresLinha));
