@@ -10,49 +10,10 @@ class Program
 {
     static void Main()
     {
-        /*string textoTeste = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. " +
-            "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown " +
-            "printer took a galley of type and scrambled it to make a type specimen book. It has survived " +
-            "not only five centuries, but also the leap into electronic typesetting, remaining essentially " +
-            "unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem " +
-             "Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including " +
-            "versions of Lorem Ipsum.";*/
-
         TextArea textArea = new();
 
-        List<Mensagem> conversa = new();
 
-        Drawing.DrawTextArea(textArea);
-
-        string entrada = "";
-        string blankSpace = new string(' ', 80);
-
-        while (entrada != ".quit")
-        {
-            Console.SetCursorPosition(5, 25);
-            Console.Write(blankSpace);
-            Console.SetCursorPosition(5, 25);
-            entrada = Console.ReadLine() ?? ".quit";
-            if (entrada == ".quit")
-                break;
-
-            if (entrada == "")
-                continue;
-            Mensagem mensagem = new()
-            {
-                Id = 1,
-                Content = entrada,
-                RemetentId = "Anderson",
-                CreatedAt = DateTime.Now,
-            };
-
-            conversa.Add(mensagem);
-
-
-            Drawing.WriteTextArea(textArea, Drawing.ProcessaMensagens(textArea, conversa));
-        }
-
-        //------
+        GUI.ReceberMensagens(textArea, "Anderson");
 
         Console.SetCursorPosition(0, 19);
         Console.WriteLine("\n\n");
@@ -81,6 +42,72 @@ public class TextArea
     public COORD Size = new() { x = 100, y = 13 };
     public COORD Origin = new() { x = 4, y = 2 };
     public int line = 0;
+}
+
+public static class GUI
+{
+    public static void ReceberMensagens(TextArea textArea, string user)
+    {
+        List<Mensagem> conversa = new();
+
+        string entrada = "";
+        string blankSpace = new string(' ', 81);
+
+        while (true)
+        {
+            Console.Clear();
+            
+            Drawing.DrawTextArea(textArea);
+
+            Console.SetCursorPosition(0, 19);
+
+            Console.Write("Nome de usuário: ");
+            user = Console.ReadLine() ?? "Anderson";
+            entrada = "";
+            while (entrada != ".quit")
+            {
+                Console.SetCursorPosition(5, 25);
+                Console.Write(blankSpace);
+                Console.SetCursorPosition(5, 25);
+                entrada = Console.ReadLine() ?? ".quit";
+                if (entrada == ".quit")
+                    break;
+
+                if (entrada == "")
+                    continue;
+
+                if (entrada.Contains(':'))
+                {
+                    Mensagem mensagem = new()
+                    {
+                        Id = 1,
+                        Content = entrada.Substring(1),
+                        RemetentId = user,
+                        CreatedAt = DateTime.Now,
+                    };
+                    conversa.Add(mensagem);
+
+                }
+                else
+                {
+
+                    Mensagem mensagem = new()
+                    {
+                        Id = 1,
+                        Content = entrada,
+                        RemetentId = user,
+                        CreatedAt = DateTime.Now,
+                    };
+                    conversa.Add(mensagem);
+
+                }
+
+
+
+                Drawing.WriteTextArea(textArea, Drawing.ProcessaMensagens(textArea, conversa));
+            }
+        }
+    }
 }
 
 public static class Drawing
@@ -148,56 +175,59 @@ public static class Drawing
         List<string> textos = new();
         string lastRemetent = "";
 
-        foreach (var message in conversa)
+        for (int i = 0; i < conversa.Count; i++)
         {
+            var message = conversa[i];
+
             if (message is null || message.Content is null)
                 continue;
-
-
-            if (message.RemetentId is not null)
-            {
-                if (message.RemetentId != lastRemetent)
-                {
-                    lastRemetent = message.RemetentId;
-                    textos.Add(message.RemetentId + ":");
-                }
-            }
-            else
-            {
-                lastRemetent = "Unknow";
-                textos.Add("Unknow" + ":");
-            }
-
 
             int maxCaracteresLinha = textArea.Size.x - 2;
             int paddingMessage = 1;
             int tamanhoMensagem = maxCaracteresLinha - paddingMessage * 2;
             string contentCopy = message.Content;
 
+            if (message.RemetentId is not null)
+            {
+                if (message.RemetentId != lastRemetent)
+                {
+                    lastRemetent = message.RemetentId;
+                    textos.Add((message.RemetentId + ":").PadRight(tamanhoMensagem + 2));
+                }
+            }
+            else
+            {
+                lastRemetent = "Unknow";
+                textos.Add(("Unknow" + ":").PadRight(tamanhoMensagem + 2));
+            }
+
             while (contentCopy?.Length > 0)
             {
                 string resultado = "";
 
-                for (int i = 0; i < paddingMessage; i++)
+                for (int j = 0; j < paddingMessage; j++)
                     resultado += " ";
 
                 resultado += contentCopy.Substring(0, Math.Min(contentCopy.Length, tamanhoMensagem));
 
-                for (int i = 0; i < paddingMessage; i++)
+                for (int j = 0; j < paddingMessage; j++)
                     resultado += " ";
 
-                resultado = resultado.PadRight(tamanhoMensagem);
+                resultado = resultado.PadRight(tamanhoMensagem + 2);
 
                 textos.Add(resultado);
                 contentCopy = contentCopy.Substring(Math.Min(contentCopy.Length, tamanhoMensagem));
             }
 
+            var nextMessage = i + 1 < conversa.Count ? conversa[i + 1] : null;
+
+            if (nextMessage != null)
+                if (message.RemetentId == nextMessage.RemetentId)
+                    continue;
 
             if (message.CreatedAt is not null)
                 textos.Add($"{message.CreatedAt.Value.Hour}:{message.CreatedAt.Value.Minute}".PadLeft(maxCaracteresLinha));
-
         }
-
         return textos;
     }
 
@@ -250,3 +280,12 @@ public class COORD
         }
 
  */
+
+
+/*string textoTeste = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. " +
+           "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown " +
+           "printer took a galley of type and scrambled it to make a type specimen book. It has survived " +
+           "not only five centuries, but also the leap into electronic typesetting, remaining essentially " +
+           "unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem " +
+            "Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including " +
+           "versions of Lorem Ipsum.";*/
