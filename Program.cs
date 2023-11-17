@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Numerics;
+using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace UTF16BoxDrawing;
@@ -9,36 +10,65 @@ class Program
 {
     static void Main()
     {
-        string textoTeste = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. " +
+        /*string textoTeste = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. " +
             "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown " +
             "printer took a galley of type and scrambled it to make a type specimen book. It has survived " +
             "not only five centuries, but also the leap into electronic typesetting, remaining essentially " +
             "unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem " +
              "Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including " +
-            "versions of Lorem Ipsum.";
+            "versions of Lorem Ipsum.";*/
 
         TextArea textArea = new();
 
+        List<Mensagem> conversa = new();
+
         Drawing.DrawTextArea(textArea);
 
-        Drawing.WriteTextArea(textArea, CortaTexto(textoTeste));
+        string entrada = "";
+        string blankSpace = new string(' ', 80);
+
+        while (entrada != ".quit")
+        {
+            Console.SetCursorPosition(5, 25);
+            Console.Write(blankSpace);
+            Console.SetCursorPosition(5, 25);
+            entrada = Console.ReadLine() ?? ".quit";
+            if (entrada == ".quit")
+                break;
+
+            if (entrada == "")
+                continue;
+            Mensagem mensagem = new()
+            {
+                Id = 1,
+                Content = entrada,
+                RemetentId = "Anderson",
+                CreatedAt = DateTime.Now,
+            };
+
+            conversa.Add(mensagem);
+
+
+            Drawing.WriteTextArea(textArea, Drawing.ProcessaMensagens(textArea, conversa));
+        }
 
         //------
 
-        Console.SetCursorPosition(0, 20);
+        Console.SetCursorPosition(0, 19);
         Console.WriteLine("\n\n");
+        Console.ReadLine();
 
     }
 
-    public static List<string> CortaTexto(string texto)
+    public static List<string> CortaTexto(TextArea textArea, string texto)
     {
         List<string> textos = new();
-        int max = 48;
+        int maxCaracteresLinha = textArea.Size.x - 2;
 
         while (texto.Length > 0)
         {
-            textos.Add(texto.Substring(0, Math.Min(texto.Length, max)));
-            texto = texto.Substring(Math.Min(texto.Length, max));
+            textos.Add(texto.Substring(0, Math.Min(texto.Length, maxCaracteresLinha)));
+            texto = texto.Substring(Math.Min(texto.Length, maxCaracteresLinha));
         }
 
         return textos;
@@ -48,7 +78,7 @@ class Program
 public class TextArea
 {
     public int Margin = 1;
-    public COORD Size = new() { x = 50, y = 10 };
+    public COORD Size = new() { x = 100, y = 13 };
     public COORD Origin = new() { x = 4, y = 2 };
     public int line = 0;
 }
@@ -111,6 +141,50 @@ public static class Drawing
         //Console.SetCursorPosition(textArea.Origin.x + 2, textArea.Origin.y + 1 + textArea.line);
         //Console.Write(text);
         //textArea.line++;
+    }
+
+    public static List<string> ProcessaMensagens(TextArea textArea, List<Mensagem> conversa)
+    {
+        List<string> textos = new();
+
+        foreach (var message in conversa)
+        {
+            if (message is null || message.Content is null)
+                return new List<string>();
+
+
+            if (message.RemetentId is not null)
+                textos.Add(message.RemetentId + ":");
+
+            int maxCaracteresLinha = textArea.Size.x - 2;
+            int paddingMessage = 1;
+            int tamanhoMensagem = maxCaracteresLinha - paddingMessage * 2;
+            string contentCopy = message.Content;
+
+            while (contentCopy?.Length > 0)
+            {
+                string resultado = "";
+
+                for (int i = 0; i < paddingMessage; i++)
+                    resultado += " ";
+
+                resultado += contentCopy.Substring(0, Math.Min(contentCopy.Length, tamanhoMensagem));
+
+                for (int i = 0; i < paddingMessage; i++)
+                    resultado += " ";
+
+                resultado = resultado.PadRight(tamanhoMensagem);
+
+                textos.Add(resultado);
+                contentCopy = contentCopy.Substring(Math.Min(contentCopy.Length, tamanhoMensagem));
+            }
+
+            if (message.CreatedAt is not null)
+                textos.Add($"{message.CreatedAt.Value.Hour}:{message.CreatedAt.Value.Minute}".PadLeft(maxCaracteresLinha));
+
+        }
+
+        return textos;
     }
 
     public static void DrawScale()
