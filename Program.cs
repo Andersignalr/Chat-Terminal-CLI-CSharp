@@ -10,10 +10,18 @@ class Program
 {
     static void Main()
     {
+        List<Mensagem> conversa;
+
+        Database.Initialize();
+
+        conversa = Database.GetMensagens();
+
+
         TextArea textArea = new();
 
+        GUI.CarregarMensagens(textArea, conversa);
 
-        GUI.ReceberMensagens(textArea, "Anderson");
+        GUI.ReceberMensagens(textArea, conversa);
 
         Console.SetCursorPosition(0, 19);
         Console.WriteLine("\n\n");
@@ -46,62 +54,69 @@ public class TextArea
 
 public static class GUI
 {
-    public static void ReceberMensagens(TextArea textArea, string user)
+    public static void CarregarMensagens(TextArea textArea, List<Mensagem> conversa)
     {
-        List<Mensagem> conversa = new();
-
-        string entrada = "";
-        string blankSpace = new string(' ', 81);
+        Drawing.WriteTextArea(textArea, Drawing.ProcessaMensagens(textArea, conversa));
+    }
+    public static void ReceberMensagens(TextArea textArea, List<Mensagem> conversa)
+    {
+        string user;
+        string entrada;
+        string blankSpace;
+        int idResult;
+        DateTime dateTime = DateTime.Now;
 
         while (true)
         {
-            Console.Clear();
-            
+            blankSpace = "";
             Drawing.DrawTextArea(textArea);
 
             Console.SetCursorPosition(0, 19);
 
             Console.Write("Nome de usuário: ");
             user = Console.ReadLine() ?? "Anderson";
+            user = user.Substring(0, Math.Min(user.Length, textArea.Size.x-3));
             entrada = "";
             while (entrada != ".quit")
             {
                 Console.SetCursorPosition(5, 25);
+                blankSpace = blankSpace.PadRight(entrada.Length);
                 Console.Write(blankSpace);
+
                 Console.SetCursorPosition(5, 25);
                 entrada = Console.ReadLine() ?? ".quit";
                 if (entrada == ".quit")
+                {
+                    Console.SetCursorPosition(5, 25);
+                    blankSpace = blankSpace.PadRight(entrada.Length);
+                    Console.Write(blankSpace);
+
+                    Console.SetCursorPosition(17, 19);
+                    blankSpace = new string(' ', user.Length);
+                    Console.Write(blankSpace);
+
                     break;
+                }
 
                 if (entrada == "")
                     continue;
 
-                if (entrada.Contains(':'))
+
+                idResult = Database.SalvarMensagem(new Mensagem
                 {
-                    Mensagem mensagem = new()
-                    {
-                        Id = 1,
-                        Content = entrada.Substring(1),
-                        RemetentId = user,
-                        CreatedAt = DateTime.Now,
-                    };
-                    conversa.Add(mensagem);
+                    Content = entrada,
+                    RemetentId = user,
+                    CreatedAt = dateTime,
+                });
 
-                }
-                else
+                Mensagem mensagem = new()
                 {
-
-                    Mensagem mensagem = new()
-                    {
-                        Id = 1,
-                        Content = entrada,
-                        RemetentId = user,
-                        CreatedAt = DateTime.Now,
-                    };
-                    conversa.Add(mensagem);
-
-                }
-
+                    Id = idResult,
+                    Content = entrada,
+                    RemetentId = user,
+                    CreatedAt = dateTime,
+                };
+                conversa.Add(mensagem);
 
 
                 Drawing.WriteTextArea(textArea, Drawing.ProcessaMensagens(textArea, conversa));
