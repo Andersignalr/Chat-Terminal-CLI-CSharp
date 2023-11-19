@@ -1,9 +1,10 @@
-﻿namespace UTF16BoxDrawing;
-
-public class Mensagem
+﻿namespace UTF16BoxDrawing
 {
-    public int Id;
-    public string? Content;
-    public string? RemetentId;
-    public DateTime? CreatedAt;
+    public class Mensagem
+    {
+        public int Id { get; set; }
+        public string? Content { get; set; }
+        public string? RemetentId { get; set; }
+        public DateTime? CreatedAt { get; set; }
+    }
 }

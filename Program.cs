@@ -129,12 +129,21 @@ public static class Drawing
 {
     public static void DrawTextArea(TextArea textArea)
     {
+        /*
         string linhaHorizontal = "\u2500";          // ─
         string linhaVertical = "\u2502";            // │
         string cantoSuperiorEsquerdo = "\u250C";    // ┌
         string cantoSuperiorDireito = "\u2510";     // ┐
         string cantoInferiorEsquerdo = "\u2514";    // └
         string cantoInferiorDireito = "\u2518";     // ┘
+        */
+
+        string linhaHorizontal = "-";          // ─
+        string linhaVertical = "|";            // │
+        string cantoSuperiorEsquerdo = "+";    // ┌
+        string cantoSuperiorDireito = "+";     // ┐
+        string cantoInferiorEsquerdo = "+";    // └
+        string cantoInferiorDireito = "+";     // ┘
 
         Console.SetCursorPosition(textArea.Origin.x, textArea.Origin.y);
 
